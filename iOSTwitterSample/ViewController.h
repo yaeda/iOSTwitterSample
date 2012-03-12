@@ -10,4 +10,19 @@
 
 @interface ViewController : UIViewController
 
+@property (weak, nonatomic) IBOutlet UIButton *sendEasyTweeetButton;
+@property (weak, nonatomic) IBOutlet UIButton *sendCustomTweetButton;
+@property (weak, nonatomic) IBOutlet UIButton *getPublicTimelineButton;
+@property (weak, nonatomic) IBOutlet UIButton *getFollowingInfoButotn;
+@property (weak, nonatomic) IBOutlet UITextField *inputTextField;
+@property (weak, nonatomic) IBOutlet UITextView *outputTextView;
+
+- (IBAction)sendEasyTweet:(id)sender;
+- (IBAction)sendCustomTweet:(id)sender;
+- (IBAction)getPublicTimeline:(id)sender;
+- (IBAction)getFollowingsInfo:(id)sender;
+
+- (void)displayText:(NSString *)text;
+- (void)canTweetStatus;
+
 @end
