@@ -209,7 +209,7 @@
 		893B8FA3150C6959000F2893 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0420;
+				LastUpgradeCheck = 0430;
 			};
 			buildConfigurationList = 893B8FA6150C6959000F2893 /* Build configuration list for PBXProject "iOSTwitterSample" */;
 			compatibilityVersion = "Xcode 3.2";

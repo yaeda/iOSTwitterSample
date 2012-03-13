@@ -38,6 +38,11 @@
     // When you receive this notification, you should refetch all account objects.
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(canTweetStatus) name:ACAccountStoreDidChangeNotification object:nil];
 
+    // swite gesture
+    UISwipeGestureRecognizer *swipeDownGesture = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(handleSwipeDownGesture:)];
+    swipeDownGesture.direction = UISwipeGestureRecognizerDirectionDown;
+    [self.view addGestureRecognizer:swipeDownGesture];
+
 }
 
 - (void)viewDidUnload
@@ -238,6 +243,13 @@
 
     self.outputTextView.text = text;
 
+}
+
+- (void)handleSwipeDownGesture:(UISwipeGestureRecognizer *)sender
+{
+    
+    [self.inputTextField resignFirstResponder];
+    
 }
 
 - (void)canTweetStatus

@@ -23,6 +23,7 @@
 - (IBAction)getFollowingsInfo:(id)sender;
 
 - (void)displayText:(NSString *)text;
+- (void)handleSwipeDownGesture:(UISwipeGestureRecognizer *)sender;
 - (void)canTweetStatus;
 
 @end
