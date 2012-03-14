@@ -42,6 +42,9 @@
     UISwipeGestureRecognizer *swipeDownGesture = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(handleSwipeDownGesture:)];
     swipeDownGesture.direction = UISwipeGestureRecognizerDirectionDown;
     [self.view addGestureRecognizer:swipeDownGesture];
+    
+    // disable outputTextView
+    self.outputTextView.editable = NO;
 
 }
 
@@ -151,14 +154,14 @@
 				// Grab the initial Twitter account to tweet from.
 				ACAccount *twitterAccount = [accountsArray objectAtIndex:0];
 				
-                [TwitterWrapper postUpdate:twitterAccount text:inputTextField.text inReplyToStatusId:nil successHandler:^(NSDictionary *datas) {
-                    
-                    // Clear the text
-                    self.inputTextField.text = @"";
+                [TwitterWrapper postUpdate:twitterAccount text:self.inputTextField.text inReplyToStatusId:nil successHandler:^(NSDictionary *datas) {
                     
                     // Output status
                     NSString *output = [NSString stringWithFormat:@"Success :\n%@", datas];
                     [self performSelectorOnMainThread:@selector(displayText:) withObject:output waitUntilDone:NO];
+                    
+                    // Clear input field
+                    [self performSelectorOnMainThread:@selector(clearInputText) withObject:nil waitUntilDone:NO];
                     
                 } errorHandler:^(NSDictionary *datas) {
                     
@@ -243,6 +246,11 @@
 
     self.outputTextView.text = text;
 
+}
+
+- (void)clearInputText
+{
+    self.inputTextField.text = nil;
 }
 
 - (void)handleSwipeDownGesture:(UISwipeGestureRecognizer *)sender
