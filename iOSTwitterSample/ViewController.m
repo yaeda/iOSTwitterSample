@@ -12,6 +12,12 @@
 #import "ViewController.h"
 #import "TwitterWrapper.h"
 
+@interface ViewController()
+
+@property (strong, nonatomic) TwitterWrapper *tw;
+
+@end
+
 @implementation ViewController
 
 @synthesize sendEasyTweeetButton;
@@ -20,6 +26,8 @@
 @synthesize getFollowingInfoButotn;
 @synthesize inputTextField;
 @synthesize outputTextView;
+
+@synthesize tw = _tw;
 
 - (void)didReceiveMemoryWarning
 {
@@ -46,6 +54,8 @@
     // disable outputTextView
     self.outputTextView.editable = NO;
 
+    // TwitterWrapper
+    self.tw = [[TwitterWrapper alloc] init];
 }
 
 - (void)viewDidUnload
@@ -136,44 +146,23 @@
     // Close keyboard
     [self.inputTextField resignFirstResponder];
     
-	// Create an account store object.
-	ACAccountStore *accountStore = [[ACAccountStore alloc] init];
-	
-	// Create an account type that ensures Twitter accounts are retrieved.
-    ACAccountType *accountType = [accountStore accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
-	
-	// Request access from the user to use their Twitter accounts.
-    [accountStore requestAccessToAccountsWithType:accountType withCompletionHandler:^(BOOL granted, NSError *error) {
-        if(granted) {
-			// Get the list of Twitter accounts.
-            NSArray *accountsArray = [accountStore accountsWithAccountType:accountType];
-			
-			// For the sake of brevity, we'll assume there is only one Twitter account present.
-			// You would ideally ask the user which account they want to tweet from, if there is more than one Twitter account present.
-			if ([accountsArray count] > 0) {
-				// Grab the initial Twitter account to tweet from.
-				ACAccount *twitterAccount = [accountsArray objectAtIndex:0];
-				
-                [TwitterWrapper postUpdate:twitterAccount text:self.inputTextField.text inReplyToStatusId:nil successHandler:^(NSDictionary *datas) {
-                    
-                    // Output status
-                    NSString *output = [NSString stringWithFormat:@"Success :\n%@", datas];
-                    [self performSelectorOnMainThread:@selector(displayText:) withObject:output waitUntilDone:NO];
-                    
-                    // Clear input field
-                    [self performSelectorOnMainThread:@selector(clearInputText) withObject:nil waitUntilDone:NO];
-                    
-                } errorHandler:^(NSDictionary *datas) {
-                    
-                    // Output error code
-                    NSString *output = [NSString stringWithFormat:@"Error :\n%@", datas];
-                    [self performSelectorOnMainThread:@selector(displayText:) withObject:output waitUntilDone:NO];
-                    
-                }];                
-			}
-        }
-	}];
-
+    [self.tw postUpdate:self.inputTextField.text
+      inReplyToStatusId:nil
+         successHandler:^(NSDictionary *datas) {
+             // Output status
+             NSString *output = [NSString stringWithFormat:@"Success :\n%@", datas];
+             [self performSelectorOnMainThread:@selector(displayText:) withObject:output waitUntilDone:NO];
+             
+             // Clear input field
+             [self performSelectorOnMainThread:@selector(clearInputText) withObject:nil waitUntilDone:NO];
+             
+         } errorHandler:^(NSDictionary *datas) {
+             
+             // Output error code
+             NSString *output = [NSString stringWithFormat:@"Error :\n%@", datas];
+             [self performSelectorOnMainThread:@selector(displayText:) withObject:output waitUntilDone:NO];
+             
+         }];                
 }
 
 - (IBAction)getPublicTimeline:(id)sender
@@ -182,7 +171,7 @@
     // Close keyboard
     [self.inputTextField resignFirstResponder];
 
-    [TwitterWrapper getPublicTimeline:^(NSDictionary *datas) {
+    [self.tw getPublicTimeline:^(NSDictionary *datas) {
         
         NSString *output = [NSString stringWithFormat:@"Public Timeline:\n%@", datas];
         [self performSelectorOnMainThread:@selector(displayText:) withObject:output waitUntilDone:NO];
@@ -202,50 +191,28 @@
     // Close keyboard
     [self.inputTextField resignFirstResponder];
 
-    // Create an account store object.
-	ACAccountStore *accountStore = [[ACAccountStore alloc] init];
-	
-	// Create an account type that ensures Twitter accounts are retrieved.
-    ACAccountType *accountType = [accountStore accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
-	
-	// Request access from the user to use their Twitter accounts.
-    [accountStore requestAccessToAccountsWithType:accountType withCompletionHandler:^(BOOL granted, NSError *error) {
-        if(granted) {
-			// Get the list of Twitter accounts.
-            NSArray *accountsArray = [accountStore accountsWithAccountType:accountType];
-			
-			// For the sake of brevity, we'll assume there is only one Twitter account present.
-			// You would ideally ask the user which account they want to tweet from, if there is more than one Twitter account present.
-			if ([accountsArray count] > 0) {
-				// Grab the initial Twitter account to tweet from.
-				ACAccount *twitterAccount = [accountsArray objectAtIndex:0];
-                
-				[TwitterWrapper getFollowings:twitterAccount successHandler:^(NSDictionary *datas) {
-                    
-                    
-                    NSString *output = [NSString stringWithFormat:@"Following Info:\n%@", datas];
-                    [self performSelectorOnMainThread:@selector(displayText:) withObject:output waitUntilDone:NO];
-                    
-                    
-                } errorHandler:^(NSDictionary *datas) {
-                    
-                    NSString *output = [NSString stringWithFormat:@"ERROR : %@\n", datas];
-                    [self performSelectorOnMainThread:@selector(displayText:) withObject:output waitUntilDone:NO];
-                    
-                }];
-                
-                
-            }
-        }
+    [self.tw getFollowings:^(NSArray *datas) {
+        
+        NSLog(@"%d", [datas count]);
+        NSString *output = [NSString stringWithFormat:@"Following Info:\n%@", datas];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self displayText:output];
+        });
+        //[self performSelectorOnMainThread:@selector(displayText:) withObject:output waitUntilDone:NO];
+        
+        
+    } errorHandler:^(NSDictionary *datas) {
+        
+        NSString *output = [NSString stringWithFormat:@"ERROR : %@\n", datas];
+        [self performSelectorOnMainThread:@selector(displayText:) withObject:output waitUntilDone:NO];
+        
     }];
 
 }
 
 - (void)displayText:(NSString *)text
 {
-
     self.outputTextView.text = text;
-
 }
 
 - (void)clearInputText

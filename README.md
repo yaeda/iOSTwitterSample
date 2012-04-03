@@ -3,6 +3,6 @@ iOSTwitterSample
 
 #### iOS Twitter Sample ####
 
-It's sample program for twiitter framework with iOS5.
+This is iOS5 twiitter-framework sample project.
 
-It's my first iOS application.
+This is my first iOS application.

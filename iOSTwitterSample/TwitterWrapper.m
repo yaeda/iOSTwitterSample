@@ -7,36 +7,54 @@
 //
 
 #import "TwitterWrapper.h"
+#import "TwitterWrapper_User.h"
 
-@interface TwitterWrapper()
+@interface TwitterWrapper() {
+    int _curAccountIndex;
+}
 
-+ (void)requestWithHandler:(NSString *)stringURL
-                parameters:(NSDictionary *)paramters
-                   account:(ACAccount *)account
-             requestMethod:(TWRequestMethod)requestMethod
-            successHandler:(TWWCallback_Dic)successHandler
-              errorHandler:(TWWCallback_Dic)errorHandler;
-    
-+ (void)getFollowingIds:(ACAccount *)account
-         successHandler:(TWWCallback_Arr)successHandler
-           errorHandler:(TWWCallback_Dic)errorHandler;
+@property (strong, nonatomic) ACAccountStore* accountStore;
+@property (strong, nonatomic) NSArray* accountArray;
 
-+ (void)getFollowingsFromIds:(NSArray *)ids
-              successHandler:(TWWCallback_Dic)successHandler
-                errorHandler:(TWWCallback_Dic)errorHandler;
 
 @end
 
 @implementation TwitterWrapper
+
+@synthesize accountStore = _accountStore;
+@synthesize accountArray = _accountArray;
 
 ////////////////////////////////////////////////////////
 //
 // Private
 //
 
-+ (void)requestWithHandler:(NSString *)stringURL
+- (id)init
+{
+    if (self = [super init]) {
+
+        // Create an account store object.
+        self.accountStore = [[ACAccountStore alloc] init];
+        
+        // Create an account type that ensures Twitter accounts are retrieved.
+        ACAccountType *accountType = [self.accountStore accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
+        
+        // Request access from the user to use their Twitter accounts.
+        [self.accountStore requestAccessToAccountsWithType:accountType withCompletionHandler:^(BOOL granted, NSError *error) {
+            if(granted) {
+                // Get the list of Twitter accounts.
+                self.accountArray = [self.accountStore accountsWithAccountType:accountType];
+            }
+        }];
+        
+        _curAccountIndex = 0;
+        
+    }
+    return self;
+}
+
+- (void)requestWithHandler:(NSString *)stringURL
                 parameters:(NSDictionary *)parameters
-                   account:(ACAccount *)account
              requestMethod:(TWRequestMethod)requestMethod
             successHandler:(TWWCallback_Dic)successHandler
               errorHandler:(TWWCallback_Dic)errorHandler
@@ -46,7 +64,12 @@
                                                  parameters:parameters
                                               requestMethod:requestMethod];
 
-    if (account) {
+    if (requestMethod == TWRequestMethodPOST || requestMethod == TWRequestMethodDELETE) {
+        if (!self.accountArray) {
+            errorHandler([NSDictionary dictionaryWithObjectsAndKeys:@"No Account", @"Error", nil]);
+            return;
+        }
+        ACAccount* account = [self.accountArray objectAtIndex:_curAccountIndex];
         [postRequest setAccount:account];
     }
     
@@ -63,21 +86,24 @@
             
         } else {
             
-            errorHandler([NSDictionary dictionaryWithObject:[NSNumber numberWithInteger:statusCode]
-                                                     forKey:@"status code"]);
+            errorHandler([NSDictionary dictionaryWithObject:[NSNumber numberWithInteger:statusCode] forKey:@"status code"]);
             
         }
     }];
     
 }
 
-+ (void)getFollowingIds:(ACAccount *)account
-         successHandler:(TWWCallback_Arr)successHandler
+- (void)getFollowingIds:(TWWCallback_Arr)successHandler
            errorHandler:(TWWCallback_Dic)errorHandler
 {
+    if (!self.accountArray) {
+        errorHandler([NSDictionary dictionaryWithObjectsAndKeys:@"No Account", @"Error", nil]);
+        return;
+    }
+    ACAccount *account = [self.accountArray objectAtIndex:_curAccountIndex];
+    
     [self requestWithHandler:@"http://api.twitter.com/1/friends/ids.json"
                   parameters:[NSDictionary dictionaryWithObjectsAndKeys:[account username], @"screen_name", nil]
-                     account:nil
                requestMethod:TWRequestMethodGET
               successHandler:^(NSDictionary *datas) {
         
@@ -90,8 +116,8 @@
     }];
 }
 
-+ (void)getFollowingsFromIds:(NSArray *)ids
-              successHandler:(TWWCallback_Dic)successHandlerRecursive
+- (void)getFollowingsFromIds:(NSArray *)ids
+              successHandler:(TWWCallback_Arr)successHandlerRecursive
                 errorHandler:(TWWCallback_Dic)errorHandler
 {    
     NSString *stringIds = nil;
@@ -106,15 +132,20 @@
     
     [self requestWithHandler:@"http://api.twitter.com/1/users/lookup.json"
                   parameters:[NSDictionary dictionaryWithObjectsAndKeys:stringIds, @"user_id", nil]
-                     account:nil requestMethod:TWRequestMethodGET
+               requestMethod:TWRequestMethodGET
               successHandler:^(NSDictionary *datas) {
-                         
-                         successHandlerRecursive(datas);
-                         if (callNext) {
-                             [self getFollowingsFromIds:nextIds successHandler:successHandlerRecursive errorHandler:errorHandler];
-                         }
+                  NSMutableArray* followings = [[NSMutableArray alloc] init];
+                  for (NSDictionary* d in datas) {
+                      [followings addObject:[[TwitterWrapper_User alloc] initWithTwitterResponse:d]];
+                  }
+                  
+                  successHandlerRecursive(followings);
 
-                     } errorHandler:errorHandler];
+                  if (callNext) {
+                      [self getFollowingsFromIds:nextIds successHandler:successHandlerRecursive errorHandler:errorHandler];
+                  }
+                  
+              } errorHandler:errorHandler];
 }
 
 ////////////////////////////////////////////////////////
@@ -122,28 +153,35 @@
 // Public
 //
 
-+ (void)getPublicTimeline:(TWWCallback_Dic)successHandler
-             errorHandler:(TWWCallback_Dic)errorHandler {
+- (void)getPublicTimeline:(TWWCallback_Dic)successHandler
+             errorHandler:(TWWCallback_Dic)errorHandler
+{
+
     [self requestWithHandler:@"http://api.twitter.com/1/statuses/public_timeline.json"
                   parameters:nil
-                     account:nil
                requestMethod:TWRequestMethodGET
               successHandler:successHandler
                 errorHandler:errorHandler];
+
 }
 
-+ (void)getFollowings:(ACAccount *)account
-       successHandler:(TWWCallback_Dic)successHandlerRecursive
+- (void)getFollowings:(TWWCallback_Arr)successHandlerRecursive
          errorHandler:(TWWCallback_Dic)errorHandler
 {
-    [self getFollowingIds:account successHandler:^(NSArray *datas) {
+
+    [self getFollowingIds:^(NSArray *datas) {
         
         [self getFollowingsFromIds:datas successHandler:successHandlerRecursive errorHandler:errorHandler];
         
     } errorHandler:errorHandler];
+
 }
 
-+ (void)postUpdate:(ACAccount *)account text:(NSString *)text inReplyToStatusId:(NSNumber *)inReplyToStatusId successHandler:(TWWCallback_Dic)successHandler errorHandler:(TWWCallback_Dic)errorHandler {
+- (void)postUpdate:(NSString *)text
+ inReplyToStatusId:(NSNumber *)inReplyToStatusId
+    successHandler:(TWWCallback_Dic)successHandler
+      errorHandler:(TWWCallback_Dic)errorHandler
+{
   
     NSDictionary *parameters = nil;
     if (!inReplyToStatusId) {
@@ -154,7 +192,6 @@
     
     [self requestWithHandler:@"http://api.twitter.com/1/statuses/update.json"
                   parameters:parameters
-                     account:account
                requestMethod:TWRequestMethodPOST
               successHandler:successHandler
                 errorHandler:errorHandler

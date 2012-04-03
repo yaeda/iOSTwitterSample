@@ -15,15 +15,13 @@ typedef void(^TWWCallback_Arr)(NSArray *datas);
 
 @interface TwitterWrapper : NSObject
 
-+ (void)getPublicTimeline:(TWWCallback_Dic)successHandler
+- (void)getPublicTimeline:(TWWCallback_Dic)successHandler
              errorHandler:(TWWCallback_Dic)errorHandler;
 
-+ (void)getFollowings:(ACAccount *)account
-         successHandler:(TWWCallback_Dic)successHandlerRecursive
-           errorHandler:(TWWCallback_Dic)errorHandler;
+- (void)getFollowings:(TWWCallback_Arr)successHandlerRecursive
+         errorHandler:(TWWCallback_Dic)errorHandler;
 
-+ (void)postUpdate:(ACAccount *)account
-              text:(NSString *)text
+- (void)postUpdate:(NSString *)text
  inReplyToStatusId:(NSNumber *)inReplyToStatusId
     successHandler:(TWWCallback_Dic)successHandler
       errorHandler:(TWWCallback_Dic)errorHandler;

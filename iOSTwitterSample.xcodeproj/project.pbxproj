@@ -23,6 +23,7 @@
 		893B8FE6150C8AAF000F2893 /* Twitter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 893B8FE5150C8AAF000F2893 /* Twitter.framework */; };
 		893B8FE8150C8AB6000F2893 /* Accounts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 893B8FE7150C8AB6000F2893 /* Accounts.framework */; };
 		897B7360150E510200915DFB /* TwitterWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 897B735F150E510200915DFB /* TwitterWrapper.m */; };
+		89E370F215272A7400239C70 /* TwitterWrapper_User.m in Sources */ = {isa = PBXBuildFile; fileRef = 89E370F115272A7400239C70 /* TwitterWrapper_User.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +60,8 @@
 		893B8FE7150C8AB6000F2893 /* Accounts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accounts.framework; path = System/Library/Frameworks/Accounts.framework; sourceTree = SDKROOT; };
 		897B735E150E510200915DFB /* TwitterWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TwitterWrapper.h; sourceTree = "<group>"; };
 		897B735F150E510200915DFB /* TwitterWrapper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TwitterWrapper.m; sourceTree = "<group>"; };
+		89E370F015272A7400239C70 /* TwitterWrapper_User.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TwitterWrapper_User.h; sourceTree = "<group>"; };
+		89E370F115272A7400239C70 /* TwitterWrapper_User.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TwitterWrapper_User.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -124,6 +127,8 @@
 			children = (
 				897B735E150E510200915DFB /* TwitterWrapper.h */,
 				897B735F150E510200915DFB /* TwitterWrapper.m */,
+				89E370F015272A7400239C70 /* TwitterWrapper_User.h */,
+				89E370F115272A7400239C70 /* TwitterWrapper_User.m */,
 				893B8FBF150C6959000F2893 /* AppDelegate.h */,
 				893B8FC0150C6959000F2893 /* AppDelegate.m */,
 				893B8FC2150C6959000F2893 /* ViewController.h */,
@@ -274,6 +279,7 @@
 				893B8FC1150C6959000F2893 /* AppDelegate.m in Sources */,
 				893B8FC4150C6959000F2893 /* ViewController.m in Sources */,
 				897B7360150E510200915DFB /* TwitterWrapper.m in Sources */,
+				89E370F215272A7400239C70 /* TwitterWrapper_User.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
